@@ -810,4 +810,108 @@ function updateTime(){
 
  });
 
- el.addEventListener('blu
+ el.addEventListener('blur',()=>{
+
+  if(!el.value)el.value='0';
+
+  updateTime();
+  saveData();
+
+ });
+
+});
+
+// UPDATE JAM DARI PERANGKAT
+
+document.getElementById('updateClock').addEventListener('click',()=>{
+
+ baseTime=new Date();
+
+ updateTime();
+
+});
+
+// NAVIGASI
+
+document.querySelectorAll('.tab').forEach(btn=>{
+
+ btn.addEventListener('click',()=>{
+
+  document.querySelectorAll('.tab').forEach(x=>{
+   x.classList.toggle('active',x===btn);
+  });
+
+  document.getElementById(btn.dataset.target).scrollIntoView({
+   behavior:'smooth',
+   block:'start'
+  });
+
+ });
+
+});
+
+// RESET BAGIAN 1
+
+function resetSection1(){
+
+ document.querySelectorAll('#bagian1 .rupiah').forEach(el=>{
+  el.value='Rp0';
+ });
+
+ updateCash();
+ saveData();
+
+}
+
+// RESET BAGIAN 2
+
+function resetSection2(){
+
+ countRows.querySelectorAll('.count-row').forEach(row=>{
+
+  row.querySelector('.count-qty').value='0';
+  row.querySelector('.count-amount-input').value='Rp0';
+
+  row.classList.remove('invalid');
+
+ });
+
+ updateCountTotal();
+ saveData();
+
+}
+
+// RESET BAGIAN 3
+
+function resetSection3(){
+
+ ['addDays','addHours','addMinutes'].forEach(id=>{
+  document.getElementById(id).value='0';
+ });
+
+ baseTime=new Date();
+
+ updateTime();
+ saveData();
+
+}
+
+document.getElementById('reset1').addEventListener('click',resetSection1);
+document.getElementById('reset2').addEventListener('click',resetSection2);
+document.getElementById('reset3').addEventListener('click',resetSection3);
+
+// JALANKAN APLIKASI
+
+restoreData();
+
+setupRupiahInputs();
+setupCountInputs();
+
+updateCash();
+updateCountTotal();
+updateTime();
+
+})();
+</script>
+</body>
+</html>
