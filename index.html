@@ -1,1 +1,813 @@
 
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>Kalkulator Kasir</title>
+
+<style>
+:root{
+ --bg:#0b1220;
+ --panel:#121d30;
+ --line:#263650;
+ --text:#edf4ff;
+ --muted:#9aabc3;
+ --cyan:#54d6e8;
+ --green:#42d392;
+ --red:#ff7777;
+ --yellow:#ffd166;
+ --radius:18px;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:radial-gradient(ellipse at top,#172943 0%,var(--bg) 55%);
+ color:var(--text);
+ font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ padding:20px 14px 40px;
+}
+.wrap{max-width:760px;margin:0 auto}
+header{padding:12px 4px 20px}
+.eyebrow{
+ color:var(--cyan);font-size:11px;font-weight:800;
+ letter-spacing:1.7px;text-transform:uppercase
+}
+h1{font-size:27px;line-height:1.15;margin:7px 0 6px}
+.subtitle{color:var(--muted);font-size:13px;line-height:1.5;margin:0}
+.tabs{
+ display:flex;gap:8px;overflow-x:auto;
+ padding:0 0 14px;scrollbar-width:none
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+ white-space:nowrap;border:1px solid var(--line);
+ background:#111c2d;color:var(--muted);
+ padding:10px 13px;border-radius:12px;
+ font-weight:700;font-size:12px
+}
+.tab.active{
+ background:#153647;border-color:#2d8292;color:#baf7ff
+}
+section.card{
+ background:linear-gradient(160deg,rgba(23,36,58,.98),rgba(16,27,44,.98));
+ border:1px solid var(--line);border-radius:var(--radius);
+ padding:17px;margin:0 0 15px;
+ box-shadow:0 12px 32px #0003
+}
+.section-head{display:flex;align-items:flex-start;gap:11px;margin-bottom:15px}
+.number{
+ width:34px;height:34px;flex:0 0 34px;border-radius:11px;
+ background:#183b4a;color:var(--cyan);
+ display:grid;place-items:center;font-weight:900
+}
+h2{font-size:17px;margin:1px 0 4px}
+.desc{font-size:12px;color:var(--muted);line-height:1.45}
+.table-head,.money-row{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,.95fr);
+ gap:10px;align-items:center
+}
+.table-head{
+ color:var(--muted);font-size:10px;text-transform:uppercase;
+ letter-spacing:.7px;padding:0 2px 8px
+}
+.money-row{padding:8px 0;border-top:1px solid #2636509c}
+.denom{font-size:13px;font-weight:750}
+.kind{
+ display:block;color:var(--muted);font-size:10px;
+ font-weight:500;margin-top:2px
+}
+input{font:inherit;color:var(--text);outline:none}
+.money-input,.count-input,.free-input,.expected-input,.offset-input{
+ width:100%;min-width:0;border:1px solid #344966;
+ background:#0d1727;border-radius:11px;
+ padding:11px 10px;font-size:14px;font-weight:700
+}
+.money-input:focus,.count-input:focus,.free-input:focus,
+.expected-input:focus,.offset-input:focus,.count-amount:focus{
+ border-color:var(--cyan);box-shadow:0 0 0 3px #54d6e81a
+}
+input::placeholder{color:#62748e}
+.money-input{text-align:right}
+.warning{
+ display:none;color:var(--yellow);font-size:10px;
+ grid-column:1/-1;margin-top:-5px;padding-left:2px
+}
+.money-row.invalid .money-input{border-color:#b58a37}
+.money-row.invalid .warning{display:block}
+.subheading{
+ font-size:12px;font-weight:800;color:#c7d6e9;
+ margin:19px 0 8px
+}
+.free-row{
+ display:grid;grid-template-columns:1fr minmax(130px,.95fr);
+ gap:10px;align-items:center;padding:7px 0
+}
+.free-row label{font-size:13px;font-weight:650}
+.expected-box{
+ margin-top:15px;padding:13px;background:#0d1727;
+ border:1px solid #344966;border-radius:14px
+}
+.expected-box label{
+ display:block;font-size:12px;color:#c7d6e9;
+ font-weight:750;margin-bottom:8px
+}
+.expected-input{font-size:16px;text-align:right}
+.total-line{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:12px;padding:13px 2px 2px
+}
+.total-line span{font-size:13px;color:var(--muted)}
+.total-line strong{font-size:18px;font-variant-numeric:tabular-nums}
+.result{
+ margin-top:12px;border-radius:14px;padding:14px;
+ background:#0d1727;border:1px solid var(--line)
+}
+.result-label{
+ font-size:11px;color:var(--muted);font-weight:800;
+ text-transform:uppercase;letter-spacing:.7px
+}
+.result-amount{
+ font-size:25px;font-weight:900;margin:4px 0 2px;
+ font-variant-numeric:tabular-nums
+}
+.result-note{font-size:12px;font-weight:700}
+.positive{color:var(--green)}
+.negative{color:var(--red)}
+.neutral{color:var(--cyan)}
+.count-row{
+ display:grid;grid-template-columns:.8fr .8fr 1.2fr;
+ gap:8px;align-items:center;padding:8px 0;
+ border-top:1px solid #2636509c
+}
+.count-row .denom{font-size:12px}
+.count-input{text-align:center;padding:11px 5px}
+.count-amount{
+ width:100%;min-width:0;text-align:right;
+ border:1px solid #344966;background:#0d1727;
+ border-radius:11px;padding:10px 7px;
+ font-size:12px;font-weight:750
+}
+.count-head{
+ display:grid;grid-template-columns:.8fr .8fr 1.2fr;
+ gap:8px;color:var(--muted);font-size:9px;
+ text-transform:uppercase;letter-spacing:.5px;padding-bottom:8px
+}
+
+/* PERINGATAN BAGIAN 2 */
+.count-warning{
+ display:none;
+ color:var(--yellow);
+ font-size:10px;
+ grid-column:1/-1;
+ margin-top:-5px;
+ padding-left:2px
+}
+.count-row.invalid .count-amount{
+ border-color:#b58a37
+}
+.count-row.invalid .count-warning{
+ display:block
+}
+
+.grand-total{
+ margin-top:13px;padding:15px;border-radius:14px;
+ background:linear-gradient(120deg,#123b43,#14304a);
+ border:1px solid #28606b;
+ display:flex;justify-content:space-between;align-items:center;gap:10px
+}
+.grand-total span{font-size:12px;color:#b6dce2;font-weight:750}
+.grand-total strong{font-size:21px;font-variant-numeric:tabular-nums}
+.time-box{
+ padding:14px;border-radius:14px;
+ background:#0d1727;border:1px solid var(--line)
+}
+.time-caption{
+ font-size:10px;color:var(--muted);font-weight:800;
+ text-transform:uppercase;letter-spacing:.8px
+}
+.time-date{font-size:18px;font-weight:850;margin-top:5px}
+.time-clock{
+ font-size:27px;font-weight:900;letter-spacing:.5px;
+ font-variant-numeric:tabular-nums
+}
+.offset-title{font-size:12px;color:#c7d6e9;font-weight:800;margin:16px 0 9px}
+.offsets{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.offsets label{font-size:11px;color:var(--muted);display:block;margin:0 0 6px}
+.offset-input{text-align:center;font-size:17px}
+.arrow{text-align:center;color:var(--cyan);font-size:19px;padding:8px}
+.result-time{
+ border-color:#28606b;
+ background:linear-gradient(120deg,#10313c,#10233a)
+}
+.section-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.reset{
+ background:transparent;border:1px solid var(--line);
+ color:var(--muted);padding:9px 13px;
+ border-radius:10px;font-size:12px;font-weight:700
+}
+.time-top{
+ display:flex;justify-content:space-between;
+ align-items:center;gap:8px;margin-bottom:9px
+}
+.update-time{
+ border:1px solid #28606b;background:#123744;
+ color:#baf7ff;border-radius:10px;
+ padding:8px 10px;font-size:11px;font-weight:800;
+ white-space:nowrap
+}
+.footer{text-align:center;color:#71839d;font-size:11px;padding:8px 0 0}
+@media(max-width:390px){
+ body{padding:14px 10px 30px}
+ section.card{padding:14px}
+ .table-head,.money-row,.free-row{
+  grid-template-columns:minmax(0,1fr) minmax(118px,.95fr);gap:7px
+ }
+ .money-input,.free-input,.expected-input{padding:10px 7px;font-size:13px}
+ .count-row,.count-head{grid-template-columns:.72fr .7fr 1.2fr;gap:5px}
+ .count-amount{font-size:11px}
+ .count-input{font-size:13px}
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<header>
+ <div class="eyebrow">TOOLS · CASH MANAGEMENT</div>
+ <h1>Kalkulator Kasir</h1>
+ <p class="subtitle">Hitung uang, cek selisih kas, dan hitung penambahan waktu dalam satu halaman.</p>
+</header>
+
+<nav class="tabs">
+ <button class="tab active" data-target="bagian1">01 · Hitung kas</button>
+ <button class="tab" data-target="bagian2">02 · Lembar/keping</button>
+ <button class="tab" data-target="bagian3">03 · Tanggal & waktu</button>
+</nav>
+
+<!-- BAGIAN 1 -->
+<section class="card" id="bagian1">
+ <div class="section-head">
+  <div class="number">01</div>
+  <div>
+   <h2>Hitung nominal kas</h2>
+   <div class="desc">Masukkan nominal uang untuk setiap pecahan. Nominal yang bukan kelipatan pecahannya akan diberi peringatan.</div>
+  </div>
+ </div>
+
+ <div class="table-head">
+  <span>Pecahan uang</span>
+  <span style="text-align:right">Nominal</span>
+ </div>
+
+ <div id="cashRows"></div>
+
+ <div class="subheading">Nominal tambahan</div>
+
+ <div class="free-row">
+  <label for="modalKasir">Modal kasir</label>
+  <input class="free-input rupiah save-input" id="modalKasir" inputmode="numeric" value="Rp0">
+ </div>
+ <div class="free-row">
+  <label for="gantungan">Uang gantungan</label>
+  <input class="free-input rupiah save-input" id="gantungan" inputmode="numeric" value="Rp0">
+ </div>
+ <div class="free-row">
+  <label for="rembesan">Uang rembesan</label>
+  <input class="free-input rupiah save-input" id="rembesan" inputmode="numeric" value="Rp0">
+ </div>
+
+ <div class="expected-box">
+  <label for="expected">TOTAL SEHARUSNYA</label>
+  <input class="expected-input rupiah save-input" id="expected" inputmode="numeric" value="Rp0">
+ </div>
+
+ <div class="total-line">
+  <span>Total uang aktual</span>
+  <strong id="actualTotal">Rp0</strong>
+ </div>
+
+ <div class="result">
+  <div class="result-label">Selisih kas</div>
+  <div class="result-amount neutral" id="difference">Rp0</div>
+  <div class="result-note neutral" id="differenceNote">Pas / sesuai</div>
+ </div>
+
+ <div class="section-actions">
+  <button class="reset" id="reset1" type="button">↻ Reset bagian 1</button>
+ </div>
+</section>
+
+<!-- BAGIAN 2 -->
+<section class="card" id="bagian2">
+ <div class="section-head">
+  <div class="number">02</div>
+  <div>
+   <h2>Hitung lembar & keping</h2>
+   <div class="desc">Isi jumlah lembar/keping atau langsung nominalnya. Keduanya bisa diubah dan saling menghitung otomatis.</div>
+  </div>
+ </div>
+
+ <div class="count-head">
+  <span>Pecahan</span>
+  <span style="text-align:center">Jumlah</span>
+  <span style="text-align:right">Total nominal</span>
+ </div>
+
+ <div id="countRows"></div>
+
+ <div class="grand-total">
+  <span>TOTAL KESELURUHAN</span>
+  <strong id="countTotal">Rp0</strong>
+ </div>
+
+ <div class="section-actions">
+  <button class="reset" id="reset2" type="button">↻ Reset bagian 2</button>
+ </div>
+</section>
+
+<!-- BAGIAN 3 -->
+<section class="card" id="bagian3">
+ <div class="section-head">
+  <div class="number">03</div>
+  <div>
+   <h2>Penambahan tanggal & waktu</h2>
+   <div class="desc">Waktu awal mengikuti jam perangkat. Tambahkan hari, jam, atau menit untuk melihat hasilnya.</div>
+  </div>
+ </div>
+
+ <div class="time-top">
+  <div class="time-caption">Waktu awal · otomatis</div>
+  <button class="update-time" id="updateClock" type="button">↻ Update jam</button>
+ </div>
+
+ <div class="time-box">
+  <div class="time-date" id="startDate">-</div>
+  <div class="time-clock" id="startClock">-</div>
+ </div>
+
+ <div class="offset-title">Tambahkan waktu</div>
+
+ <div class="offsets">
+  <div>
+   <label for="addDays">Hari</label>
+   <input class="offset-input save-input" id="addDays" type="number" inputmode="numeric" min="0" step="1" value="0">
+  </div>
+  <div>
+   <label for="addHours">Jam</label>
+   <input class="offset-input save-input" id="addHours" type="number" inputmode="numeric" min="0" step="1" value="0">
+  </div>
+  <div>
+   <label for="addMinutes">Menit</label>
+   <input class="offset-input save-input" id="addMinutes" type="number" inputmode="numeric" min="0" step="1" value="0">
+  </div>
+ </div>
+
+ <div class="arrow">↓</div>
+
+ <div class="time-box result-time">
+  <div class="time-caption">Hasil setelah ditambahkan</div>
+  <div class="time-date" id="endDate">-</div>
+  <div class="time-clock" id="endClock">-</div>
+ </div>
+
+ <div class="section-actions">
+  <button class="reset" id="reset3" type="button">↻ Reset bagian 3</button>
+ </div>
+</section>
+
+<div class="footer">
+ Kalkulator Kasir · Perhitungan langsung di perangkat
+</div>
+</div>
+
+<script>
+(function(){
+
+const STORAGE_KEY='kalkulatorKasir_data_v3';
+
+const denominations=[
+ {value:100000,label:'Rp100.000',kind:'Uang kertas'},
+ {value:50000,label:'Rp50.000',kind:'Uang kertas'},
+ {value:20000,label:'Rp20.000',kind:'Uang kertas'},
+ {value:10000,label:'Rp10.000',kind:'Uang kertas'},
+ {value:5000,label:'Rp5.000',kind:'Uang kertas'},
+ {value:2000,label:'Rp2.000',kind:'Uang kertas'},
+ {value:1000,label:'Rp1.000',kind:'Uang kertas'},
+ {value:1000,label:'Rp1.000',kind:'Uang koin'},
+ {value:500,label:'Rp500',kind:'Uang koin'},
+ {value:200,label:'Rp200',kind:'Uang koin'},
+ {value:100,label:'Rp100',kind:'Uang koin'}
+];
+
+const fmt=n=>'Rp'+Math.abs(Math.round(n)).toLocaleString('id-ID');
+
+const digits=s=>Number(String(s||'').replace(/[^\d]/g,''))||0;
+
+const cashRows=document.getElementById('cashRows');
+const countRows=document.getElementById('countRows');
+
+// Membuat baris pecahan
+
+denominations.forEach((d,i)=>{
+
+ const row=document.createElement('div');
+ row.className='money-row';
+ row.dataset.index=i;
+
+ row.innerHTML=
+ '<div class="denom">'+d.label+
+ '<span class="kind">'+d.kind+'</span></div>'+
+ '<input id="cash_'+i+'" class="money-input rupiah save-input cash-input" inputmode="numeric" autocomplete="off" value="Rp0">'+
+ '<div class="warning">⚠ Nominal harus kelipatan '+fmt(d.value)+'.</div>';
+
+ cashRows.appendChild(row);
+
+ const c=document.createElement('div');
+ c.className='count-row';
+
+ c.innerHTML=
+ '<div class="denom">'+d.label+
+ '<span class="kind">'+(d.kind==='Uang kertas'?'Lembar':'Keping')+'</span></div>'+
+ '<input id="qty_'+i+'" class="count-input save-input count-qty" type="text" inputmode="decimal" value="0">'+
+ '<input id="amt_'+i+'" class="count-amount rupiah save-input count-amount-input" inputmode="numeric" autocomplete="off" value="Rp0">'+
+ '<div class="count-warning">⚠ Nominal harus kelipatan '+fmt(d.value)+'.</div>';
+
+ countRows.appendChild(c);
+
+});
+
+// PENYIMPANAN LOKAL
+
+function saveData(){
+
+ const data={};
+
+ document.querySelectorAll('.save-input').forEach(el=>{
+  data[el.id]=el.value;
+ });
+
+ try{
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+ }catch(e){}
+
+}
+
+function restoreData(){
+
+ try{
+
+  const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+
+  Object.keys(data).forEach(id=>{
+
+   const el=document.getElementById(id);
+
+   if(el)el.value=data[id];
+
+  });
+
+ }catch(e){}
+
+}
+
+// BAGIAN 1
+
+function updateCash(){
+
+ let total=0;
+
+ document.querySelectorAll('.cash-input').forEach(el=>{
+
+  const n=digits(el.value);
+  const i=Number(el.closest('.money-row').dataset.index);
+  const d=denominations[i];
+
+  const invalid=n%d.value!==0;
+
+  el.closest('.money-row').classList.toggle('invalid',invalid);
+
+  total+=n;
+
+ });
+
+ ['modalKasir','gantungan','rembesan'].forEach(id=>{
+  total+=digits(document.getElementById(id).value);
+ });
+
+ const expected=digits(document.getElementById('expected').value);
+
+ document.getElementById('actualTotal').textContent=fmt(total);
+
+ const diff=total-expected;
+ const amount=document.getElementById('difference');
+ const note=document.getElementById('differenceNote');
+
+ amount.textContent=(diff>0?'+':diff<0?'-':'')+fmt(diff);
+
+ amount.className='result-amount '+(
+  diff>0?'positive':diff<0?'negative':'neutral'
+ );
+
+ note.className='result-note '+(
+  diff>0?'positive':diff<0?'negative':'neutral'
+ );
+
+ note.textContent=
+  diff>0?'Uang lebih '+fmt(diff):
+  diff<0?'Uang kurang '+fmt(-diff):
+  'Pas / sesuai';
+
+}
+
+// BAGIAN 2
+
+function normalizeQuantity(el){
+
+ let raw=String(el.value||'')
+  .replace(',', '.')
+  .replace(/[^\d.]/g,'');
+
+ const parts=raw.split('.');
+
+ if(parts.length>2){
+  raw=parts[0]+'.'+parts.slice(1).join('');
+ }
+
+ if(raw===''||raw==='.'){
+  el.value='';
+  return 0;
+ }
+
+ const value=Number(raw);
+
+ if(!Number.isFinite(value)){
+  el.value='';
+  return 0;
+ }
+
+ // Menghilangkan angka nol di depan.
+ el.value=String(value);
+
+ return value;
+
+}
+
+function updateCountFromQuantity(row,index){
+
+ const qty=normalizeQuantity(row.querySelector('.count-qty'));
+
+ const amount=row.querySelector('.count-amount-input');
+
+ amount.value=fmt(qty*denominations[index].value);
+
+ // Nominal dari jumlah lembar/keping otomatis valid.
+ row.classList.remove('invalid');
+
+}
+
+function updateCountFromAmount(el){
+
+ if(!el.classList.contains('count-amount-input'))return;
+
+ const row=el.closest('.count-row');
+
+ const index=Array.prototype.indexOf.call(countRows.children,row);
+
+ const amount=digits(el.value);
+
+ const qty=row.querySelector('.count-qty');
+
+ const denomination=denominations[index].value;
+
+ // Cek apakah nominal merupakan kelipatan pecahan.
+ const invalid=amount%denomination!==0;
+
+ row.classList.toggle('invalid',invalid);
+
+ // Jika tidak valid, jumlah lembar/keping dikosongkan.
+ // Tidak boleh menampilkan jumlah pecahan seperti 0,05.
+ if(invalid){
+
+  qty.value='';
+
+ }else{
+
+  const exact=amount/denomination;
+
+  qty.value=amount===0?'':String(exact);
+
+ }
+
+ updateCountTotal();
+
+}
+
+function updateCountTotal(){
+
+ let total=0;
+
+ countRows.querySelectorAll('.count-row').forEach((row,i)=>{
+
+  const amount=digits(row.querySelector('.count-amount-input').value);
+
+  // Validasi juga saat data dipulihkan dari penyimpanan lokal.
+  const invalid=amount%denominations[i].value!==0;
+
+  row.classList.toggle('invalid',invalid);
+
+  total+=amount;
+
+ });
+
+ document.getElementById('countTotal').textContent=fmt(total);
+
+}
+
+function setupCountInputs(){
+
+ countRows.querySelectorAll('.count-row').forEach((row,i)=>{
+
+  const qty=row.querySelector('.count-qty');
+
+  qty.addEventListener('focus',()=>{
+
+   if((Number(qty.value)||0)===0){
+    qty.value='';
+   }
+
+  });
+
+  qty.addEventListener('input',()=>{
+
+   updateCountFromQuantity(row,i);
+   updateCountTotal();
+   saveData();
+
+  });
+
+  qty.addEventListener('blur',()=>{
+
+   if(!qty.value)qty.value='0';
+
+   updateCountFromQuantity(row,i);
+   updateCountTotal();
+   saveData();
+
+  });
+
+ });
+
+}
+
+// INPUT RUPIAH
+
+function setRupiahInput(el){
+
+ const n=digits(el.value);
+ el.value=fmt(n);
+
+}
+
+function setupRupiahInputs(){
+
+ document.querySelectorAll('.rupiah').forEach(el=>{
+
+  el.addEventListener('focus',()=>{
+
+   if(digits(el.value)===0){
+    el.value='';
+   }
+
+  });
+
+  el.addEventListener('input',()=>{
+
+   const n=digits(el.value);
+
+   el.value=n===0?'':fmt(n);
+
+   updateCash();
+   updateCountFromAmount(el);
+   saveData();
+
+   try{
+    el.setSelectionRange(el.value.length,el.value.length);
+   }catch(e){}
+
+  });
+
+  el.addEventListener('blur',()=>{
+
+   setRupiahInput(el);
+   updateCash();
+   updateCountFromAmount(el);
+   saveData();
+
+  });
+
+ });
+
+}
+
+// INPUT TAMBAHAN BAGIAN 1
+
+['modalKasir','gantungan','rembesan','expected'].forEach(id=>{
+
+ const el=document.getElementById(id);
+
+ el.addEventListener('focus',()=>{
+
+  if(digits(el.value)===0)el.value='';
+
+ });
+
+ el.addEventListener('input',()=>{
+
+  updateCash();
+  saveData();
+
+ });
+
+ el.addEventListener('blur',()=>{
+
+  setRupiahInput(el);
+  updateCash();
+  saveData();
+
+ });
+
+});
+
+// BAGIAN 3
+
+function dateText(d){
+
+ return new Intl.DateTimeFormat('id-ID',{
+  day:'numeric',
+  month:'long',
+  year:'numeric'
+ }).format(d);
+
+}
+
+function clockText(d){
+
+ return new Intl.DateTimeFormat('id-ID',{
+  hour:'2-digit',
+  minute:'2-digit',
+  hourCycle:'h23'
+ }).format(d).replace('.',':');
+
+}
+
+let baseTime=new Date();
+
+function updateTime(){
+
+ document.getElementById('startDate').textContent=dateText(baseTime);
+
+ document.getElementById('startClock').textContent=clockText(baseTime);
+
+ const days=Math.max(0,Number(document.getElementById('addDays').value)||0);
+ const hours=Math.max(0,Number(document.getElementById('addHours').value)||0);
+ const minutes=Math.max(0,Number(document.getElementById('addMinutes').value)||0);
+
+ const result=new Date(
+  baseTime.getTime()+((days*24+hours)*60+minutes)*60000
+ );
+
+ document.getElementById('endDate').textContent=dateText(result);
+
+ document.getElementById('endClock').textContent=clockText(result);
+
+}
+
+// INPUT TAMBAHAN WAKTU
+
+['addDays','addHours','addMinutes'].forEach(id=>{
+
+ const el=document.getElementById(id);
+
+ el.addEventListener('focus',()=>{
+
+  if(Number(el.value)===0)el.value='';
+
+ });
+
+ el.addEventListener('input',()=>{
+
+  const clean=String(el.value).replace(/[^\d]/g,'');
+
+  // Contoh 02 otomatis menjadi 2.
+  el.value=clean?String(Number(clean)):'';
+
+  updateTime();
+  saveData();
+
+ });
+
+ el.addEventListener('blu
